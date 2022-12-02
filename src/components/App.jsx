@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { Button } from './Button/Button';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Modal } from './Modal/Modal';
@@ -8,93 +8,64 @@ import { API, searchParams } from './Servises/API';
 
 import css from './App.module.css';
 
-export class App extends Component {
-  state = {
-    query: '',
-    queryArr: [],
-    largeImg: '',
-    isModalShown: false,
-    status: 'idle',
-    currentPage: 1,
-    totalImage: 0,
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [queryArr, setQueryArr] = useState([]);
+  const [largeImg, setLargeImg] = useState('');
+  const [isModalShown, setIsModalShown] = useState(false);
+  const [queryStatus, setQueryStatus] = useState('idle');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalImage, setTotalImage] = useState(0);
+
+  const onSubmit = name => {
+    setQuery(name);
+    setCurrentPage(1);
+    setLargeImg('');
+    setQueryArr([]);
   };
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.currentPage !== this.state.currentPage
-    ) {
-      return this.requestFunc();
-    }
-  }
-
-  onSubmit = name => {
-    this.setState({
-      query: name,
-      currentPage: 1,
-      largeImg: '',
-      queryArr: [],
-    });
+  const toggleModal = () => {
+    setIsModalShown(prevState => !prevState);
   };
 
-  toggleModal = () => {
-    this.setState(({ isModalShown }) => ({ isModalShown: !isModalShown }));
+  const onGalleryItemClick = src => {
+    toggleModal();
+    setLargeImg(src);
   };
 
-  onGalleryItemClick = src => {
-    this.toggleModal();
-    this.setState({ largeImg: src });
+  const loadMore = () => {
+    setCurrentPage(prevState => prevState + 1);
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      currentPage: prevState.currentPage + 1,
-    }));
-  };
-
-  async requestFunc() {
+  useEffect(() => {
     try {
-      this.setState({ status: 'pending' });
-
-      searchParams.set('q', this.state.query);
-      searchParams.set('page', this.state.currentPage);
-
-      await API().then(res => {
-        if (!res.data.hits.length) {
-          this.setState({ status: 'idle' });
+      setQueryStatus('pending');
+      API(query, currentPage).then(res => {
+        if (res.data.hits.length === 0) {
+          setQueryStatus('idle');
           return window.alert(
             'Sorry, there are no images matching your search query. Please try again'
           );
         }
-        this.setState(({ queryArr }) => ({
-          queryArr: [...queryArr, ...res.data.hits],
-          status: 'resolved',
-          totalImage: res.data.total,
-        }));
+        setQueryArr(prevState => [...prevState, ...res.data.hits]);
+        setQueryStatus('pending');
+        setTotalImage(res.data.total);
       });
     } catch (error) {
+      console.log(error);
       window.alert('Something wrong');
     }
-  }
+  }, [query, currentPage]);
 
-  render() {
-    const {onSubmit, onGalleryItemClick, loadMore, toggleModal, state :{queryArr, isModalShown, totalImage, largeImg, status}} = this
-    return (
-      <section className={css.App}>
-        <Searchbar onSubmit={onSubmit} />
-        <ImageGallery
-          queryArr={queryArr}
-          click={onGalleryItemClick}
-        />
-        {0 < queryArr.length &&
-          queryArr.length < totalImage && (
-            <Button onClick={loadMore} />
-          )}
-        {isModalShown && (
-          <Modal src={largeImg} close={toggleModal} />
-        )}
-        {status === 'pending' && <Loader />}
-      </section>
-    );
-  }
-}
+  return (
+    <section className={css.App}>
+      <Searchbar onSubmit={onSubmit} />
+      <ImageGallery queryArr={queryArr} click={onGalleryItemClick} />
+      {0 < queryArr.length && queryArr.length < totalImage && (
+        <Button onClick={loadMore} />
+      )}
+      {isModalShown && <Modal src={largeImg} close={toggleModal} />}
+      {queryStatus === 'pending' && <Loader />}
+    </section>
+  );
+};

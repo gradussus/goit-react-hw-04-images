@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import css from './Searchbar.module.css';
 
-export class Searchbar extends Component {
+export const Searchbar = ({ onSubmit }) => {
   state = {
     searchQuery: '',
   };
@@ -23,24 +23,22 @@ export class Searchbar extends Component {
     e.target.reset();
   };
 
-  render() {
-    return (
-      <header className={css.Searchbar}>
-        <form className={css.SearchForm} onSubmit={this.handleSubmit}>
-          <button type="submit" className={css.SearchForm_button}>
-            <span className={css.SearchForm_button_label}>Search</span>
-          </button>
+  return (
+    <header className={css.Searchbar}>
+      <form className={css.SearchForm} onSubmit={this.handleSubmit}>
+        <button type="submit" className={css.SearchForm_button}>
+          <span className={css.SearchForm_button_label}>Search</span>
+        </button>
 
-          <input
-            className={css.SearchForm_input}
-            onChange={this.handleChangeQuery}
-            type="text"
-            autocomplete="off"
-            autofocus
-            placeholder="Search images and photos"
-          />
-        </form>
-      </header>
-    );
-  }
-}
+        <input
+          className={css.SearchForm_input}
+          onChange={this.handleChangeQuery}
+          type="text"
+          autocomplete="off"
+          autofocus
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
+};
