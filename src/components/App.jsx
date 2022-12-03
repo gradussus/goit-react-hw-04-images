@@ -1,10 +1,10 @@
-import { Component, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from './Button/Button';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Modal } from './Modal/Modal';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Loader } from './Loader/Loader';
-import { API, searchParams } from './Servises/API';
+import { API } from './Servises/API';
 
 import css from './App.module.css';
 
@@ -22,22 +22,30 @@ export const App = () => {
     setCurrentPage(1);
     setLargeImg('');
     setQueryArr([]);
+    // console.log('1');
   };
 
   const toggleModal = () => {
     setIsModalShown(prevState => !prevState);
+    // console.log('2');
   };
 
   const onGalleryItemClick = src => {
     toggleModal();
     setLargeImg(src);
+    // console.log('3');
   };
 
   const loadMore = () => {
     setCurrentPage(prevState => prevState + 1);
+    // console.log('4');
   };
 
   useEffect(() => {
+    if (query.length === 0) {
+      return;
+    }
+
     try {
       setQueryStatus('pending');
       API(query, currentPage).then(res => {
@@ -48,8 +56,9 @@ export const App = () => {
           );
         }
         setQueryArr(prevState => [...prevState, ...res.data.hits]);
-        setQueryStatus('pending');
+        setQueryStatus('idle');
         setTotalImage(res.data.total);
+        console.log('5');
       });
     } catch (error) {
       console.log(error);
