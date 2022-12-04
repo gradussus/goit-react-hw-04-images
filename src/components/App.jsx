@@ -22,23 +22,19 @@ export const App = () => {
     setCurrentPage(1);
     setLargeImg('');
     setQueryArr([]);
-    // console.log('1');
   };
 
   const toggleModal = () => {
     setIsModalShown(prevState => !prevState);
-    // console.log('2');
   };
 
   const onGalleryItemClick = src => {
     toggleModal();
     setLargeImg(src);
-    // console.log('3');
   };
 
   const loadMore = () => {
     setCurrentPage(prevState => prevState + 1);
-    // console.log('4');
   };
 
   useEffect(() => {
@@ -58,7 +54,6 @@ export const App = () => {
         setQueryArr(prevState => [...prevState, ...res.data.hits]);
         setQueryStatus('idle');
         setTotalImage(res.data.total);
-        console.log('5');
       });
     } catch (error) {
       console.log(error);
@@ -73,7 +68,9 @@ export const App = () => {
       {0 < queryArr.length && queryArr.length < totalImage && (
         <Button onClick={loadMore} />
       )}
-      {isModalShown && <Modal src={largeImg} close={toggleModal} />}
+      {isModalShown && (
+        <Modal src={largeImg} close={toggleModal} isModalShown={isModalShown} />
+      )}
       {queryStatus === 'pending' && <Loader />}
     </section>
   );
